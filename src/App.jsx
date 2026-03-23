@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import SignIn from "./Auth/SignIn";
-import Home from "./Components/home";
+import Home from "./Components/Home";
 import LandingPage from "./Pages/LandingPage";
 import Admission from "./Components/CardPages/Admission";
 import FacultyDetails from "./Components/CardPages/FacultyDetails";
