@@ -1,0 +1,10 @@
+node_modules/
+serviceAccountKey.json
+*.log
+
+serviceAccountKey.json
+DEMO_LOGIN_CREDENTIALS.md
+
+.env.local
+.env.*.local
+demo-credentials.txt

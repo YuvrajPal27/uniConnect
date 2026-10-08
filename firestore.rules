@@ -1,0 +1,138 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isChancellor() {
+      return isAuthenticated()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "chancellor";
+    }
+
+    function isUniversityUser() {
+      return isAuthenticated()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "university";
+    }
+
+    function currentUniversity() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.university;
+    }
+
+    function allowedUniversityName(name) {
+      return name in [
+        "Kumaun University, Nainital",
+        "G.B.Pant University of Agriculture & Technology, Pant Nagar",
+        "Uttarakhand Sanskrit University, Haridwar",
+        "Doon University, Dehradun",
+        "Veer Madho Singh Bhandari Uttarakhand Technical University, Dehradun",
+        "Uttarakhand Open University, Haldwani",
+        "Uttarakhand Ayurved University, Dehradun",
+        "Uttarakhand University of Horticulture & Forestry, Bharsar",
+        "Shree Dev Suman Uttarakhand University, Badhsahithul, Tehri Garhwal",
+        "Hemwati Nandan Bahuguna Medical Education University, Dehradun",
+        "Soban Singh Jeena University, Almora"
+      ];
+    }
+
+    match /users/{userId} {
+      allow read: if isChancellor() || (isAuthenticated() && request.auth.uid == userId);
+      allow create: if isAuthenticated()
+        && request.auth.uid == userId
+        && request.resource.data.role == "university"
+        && request.resource.data.email == request.auth.token.email
+        && allowedUniversityName(request.resource.data.university);
+      allow update, delete: if false;
+    }
+
+    match /Universities/{university}/{document=**} {
+      allow read: if isChancellor();
+      allow read, write: if isUniversityUser() && currentUniversity() == university;
+    }
+
+    function ownUniversityRecord() {
+      return isUniversityUser() && resource.data.UniversityName == currentUniversity();
+    }
+
+    function newUniversityRecord() {
+      return isUniversityUser() && request.resource.data.UniversityName == currentUniversity();
+    }
+
+    match /facultyDetails/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow create: if newUniversityRecord();
+      allow update, delete: if ownUniversityRecord();
+    }
+
+    match /TnP/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow create: if newUniversityRecord();
+      allow update, delete: if ownUniversityRecord();
+    }
+
+    match /infrastructureDetails/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow create: if newUniversityRecord();
+      allow update, delete: if ownUniversityRecord();
+    }
+
+    match /capacity/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow create: if newUniversityRecord();
+      allow update, delete: if ownUniversityRecord();
+    }
+
+    match /enrollment/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow create: if newUniversityRecord();
+      allow update, delete: if ownUniversityRecord();
+    }
+
+    match /achievements/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow create: if newUniversityRecord();
+      allow update, delete: if ownUniversityRecord();
+    }
+
+    match /training/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow create: if newUniversityRecord();
+      allow update, delete: if ownUniversityRecord();
+    }
+
+    match /budget/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow create: if newUniversityRecord();
+      allow update, delete: if ownUniversityRecord();
+    }
+
+    match /mou/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow create: if newUniversityRecord();
+      allow update, delete: if ownUniversityRecord();
+    }
+
+    match /rankingSystemDetails/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow create: if newUniversityRecord();
+      allow update, delete: if ownUniversityRecord();
+    }
+
+    // Admission is stored under a university-owned hierarchy.
+    // The parent university path rule above enforces ownership.
+
+    // Feedback is submitted by the separate feedback website.
+    // It is intentionally read-only from this application.
+    match /studentFeedback/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow write: if false;
+    }
+
+    match /parentFeedback/{id} {
+      allow read: if isChancellor() || ownUniversityRecord();
+      allow write: if false;
+    }
+  }
+}

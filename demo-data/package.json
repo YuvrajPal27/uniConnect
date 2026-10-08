@@ -1,0 +1,11 @@
+{
+  "name": "uniconnect-demo-data-seeder",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "seed": "node seed-demo-data.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.6.0"
+  }
+}
